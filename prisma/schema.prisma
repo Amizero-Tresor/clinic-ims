@@ -1,0 +1,87 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  firstName String
+  lastName  String
+  email     String   @unique
+  phoneNumber String
+  type      UserType
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Employee {
+  id           Int      @id @default(autoincrement())
+  employeeName String
+  department   Department
+  phoneNumber  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  outgoingTransactions OutgoingTransaction[]
+
+  @@unique([employeeName, phoneNumber])
+}
+
+model Product {
+  id           Int       @id @default(autoincrement())
+  productName  String    @unique
+  stock        Stock?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  incomingTransactions IncomingTransaction[]
+  outgoingTransactions OutgoingTransaction[]
+}
+
+model Stock {
+  id            Int      @id @default(autoincrement())
+  productName   String   @unique
+  quantity      Int
+  expirationDate DateTime
+  registrationDate DateTime @default(now())
+  product       Product     @relation(fields: [productName], references: [productName])
+}
+
+model IncomingTransaction {
+  id           Int       @id @default(autoincrement())
+  date         DateTime  @default(now())
+  productName  String
+  quantity     Int
+  expirationDate DateTime
+  product      Product   @relation(fields: [productName], references: [productName])
+}
+
+model OutgoingTransaction {
+  id           Int       @id @default(autoincrement())
+  date         DateTime  @default(now())
+  productName  String
+  quantity     Int
+  employeeName String
+  employeePhone String
+  product      Product   @relation(fields: [productName], references: [productName])
+  employee     Employee  @relation(fields: [employeeName, employeePhone], references: [employeeName, phoneNumber])
+}
+
+enum UserType {
+  ADMIN
+  MANAGER
+}
+
+enum Department {
+  PHARMACY
+  LAB
+  RECEPTION
+  WARD
+}

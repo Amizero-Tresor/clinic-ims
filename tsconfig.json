@@ -1,0 +1,25 @@
+{
+  "ts-node": {
+    // these options are overrides used only by ts-node
+    // same as the --compilerOptions flag and the TS_NODE_COMPILER_OPTIONS environment variable
+    "compilerOptions": {
+       "module": "CommonJS"
+    }
+  },
+
+    "compilerOptions": {
+        "target": "esnext",
+      "module": "esnext",
+        "outDir": "./build",
+        // "rootDir": "./src",
+        "strict": true,
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "experimentalDecorators": true,
+        "strictPropertyInitialization": false,
+        "emitDecoratorMetadata": true,
+        "resolveJsonModule": true
+    }
+}
