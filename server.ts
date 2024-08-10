@@ -7,7 +7,9 @@ const transactionRoutes = require("./src/routes/transaction");
 import morgan from 'morgan';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUI from 'swagger-ui-express';
-import { setupSwagger } from './src/config/swagger'; // Adjust import path if needed
+import { setupSwagger } from './src/config/swagger';
+const cors = require('cors');
+ // Adjust import path if needed
 
 dotenv.config();
 
@@ -32,6 +34,12 @@ const swaggerDocs = swaggerJSDoc(swaggerOptions);
 // Middleware setup
 app.use(express.json());
 app.use(morgan("dev"));
+
+app.use(cors({
+    origin: 'http://localhost:5173', // Allow requests from this origin
+    methods: 'GET,POST,PUT,DELETE', // Allow these HTTP methods
+    credentials: true // If you need to send cookies with requests
+  }));
 
 // Default route
 app.get('/', (req: Request, res: Response) => {
