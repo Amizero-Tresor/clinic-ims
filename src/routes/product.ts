@@ -5,7 +5,7 @@ import { getProductById, createProduct, getProducts, updateProduct, deleteProduc
 
 const router = express.Router();
 
-router.post('/create', createProduct);
+router.post('/', createProduct);
 router.get('/', getProducts);
 router.get('/:id', getProductById);  // Get a product by ID
 router.put('/:id', updateProduct);

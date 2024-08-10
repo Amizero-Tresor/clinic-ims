@@ -37,7 +37,7 @@ model Employee {
 model Product {
   id           Int       @id @default(autoincrement())
   productName  String    @unique
-  stock        Stock?
+  stocks        Stock[] 
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -46,12 +46,12 @@ model Product {
 }
 
 model Stock {
-  id            Int      @id @default(autoincrement())
-  productName   String   @unique
-  quantity      Int
-  expirationDate DateTime
+  id              Int      @id @default(autoincrement())
+  productName     String    
+  quantity        Int
+  expirationDate  DateTime
   registrationDate DateTime @default(now())
-  product       Product     @relation(fields: [productName], references: [productName])
+  product         Product  @relation(fields: [productName], references: [productName])
 }
 
 model IncomingTransaction {

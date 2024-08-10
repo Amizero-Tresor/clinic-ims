@@ -5,7 +5,7 @@ import { getEmployeeById, createEmployee, getEmployees, updateEmployee, deleteEm
 
 const router = express.Router();
 
-router.post('/create', createEmployee);
+router.post('/', createEmployee);
 router.get('/', getEmployees);
 router.get('/:id', getEmployeeById);  // Route to get employee by ID
 router.put('/:id', updateEmployee);

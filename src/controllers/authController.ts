@@ -24,9 +24,9 @@ import prisma from "../../prisma/prisma-client"
  *           schema:
  *             type: object
  *             properties:
- *               firstname:
+ *               firstName:
  *                 type: string
- *               lastname:
+ *               lastName:
  *                 type: string
  *               email:
  *                 type: string
@@ -34,7 +34,7 @@ import prisma from "../../prisma/prisma-client"
  *                 type: string
  *               type:
  *                 type: string
- *                 enum: [admin, manager]
+ *                 enum: [ADMIN, MANAGER]
  *     responses:
  *       200:
  *         description: The user was successfully registered
@@ -72,12 +72,14 @@ export const register = async (req: Request, res: Response) => {
 
     return res.status(201).json({ token, user });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: 'Server error', error });
+    
   }
 };
 /**
  * @swagger
- * /auth/login:
+ * api/auth/login:
  *   post:
  *     summary: Authenticate a user
  *     tags: [Auth]
