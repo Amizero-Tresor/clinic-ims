@@ -181,7 +181,7 @@
       });
 
       await prisma.stock.update({
-        where: { id: productName },
+        where: { id: product.id },
         data: {
           quantity: { decrement: quantity },
         },
