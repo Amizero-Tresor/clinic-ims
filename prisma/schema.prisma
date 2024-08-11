@@ -55,13 +55,14 @@ model Stock {
 }
 
 model IncomingTransaction {
-  id           Int       @id @default(autoincrement())
-  date         DateTime  @default(now())
-  productName  String
-  quantity     Int
-  expirationDate DateTime
-  product      Product   @relation(fields: [productName], references: [productName])
+  id              Int       @id @default(autoincrement())
+  date            DateTime  @default(now())
+  productName     String
+  quantity        Int
+  expirationDate  DateTime
+  product         Product    @relation(fields: [productName], references: [productName])
 }
+
 
 model OutgoingTransaction {
   id           Int       @id @default(autoincrement())
