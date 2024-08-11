@@ -175,8 +175,6 @@
       const transaction = await prisma.outgoingTransaction.create({
         data: {
           quantity,
-          employeeName,
-          employeePhone,
           product: { connect: { id: product.id } },
           employee: { connect: { id: employee.id } },
         },
@@ -191,6 +189,7 @@
 
       return res.status(201).json(transaction);
     } catch (error) {
+      console.log(error)
       return res.status(500).json({ message: 'Server error', error });
     }
   };
