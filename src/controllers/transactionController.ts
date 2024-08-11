@@ -144,37 +144,43 @@
    */
   export const createOutgoingTransaction = async (req: Request, res: Response) => {
     const { productName, quantity, employeeName, employeePhone } = req.body;
-
+  
     try {
+      // Find the product by productName
       const product = await prisma.product.findUnique({
         where: { productName },
       });
-
+  
       if (!product) {
         return res.status(400).json({ message: 'Product not found' });
       }
-
+  
+      // Find the employee by employeeName and phoneNumber
       const employee = await prisma.employee.findUnique({
         where: {
           employeeName_phoneNumber: { employeeName, phoneNumber: employeePhone },
         },
       });
-
+  
       if (!employee) {
         return res.status(400).json({ message: 'Employee not found' });
       }
-
+  
+      // Find the stock by productName
       const stock = await prisma.stock.findUnique({
-        where: {productName: productName },
+        where: { productName },
       });
-
-      if (!stock || stock.quantity < quantity) {
-        console.log(stock);
-        console.log('Available stock quantity:', stock.quantity);
-        console.log('Requested quantity:', quantity);
+  
+      if (!stock) {
+        return res.status(400).json({ message: 'Stock not found' });
+      }
+  
+      // Check if there's enough stock available
+      if (stock.quantity < quantity) {
         return res.status(400).json({ message: 'Not enough stock available' });
       }
-
+  
+      // Create the outgoing transaction
       const transaction = await prisma.outgoingTransaction.create({
         data: {
           quantity,
@@ -182,20 +188,22 @@
           employee: { connect: { id: employee.id } },
         },
       });
-
+  
+      // Update the stock quantity
       await prisma.stock.update({
         where: { productName },
         data: {
           quantity: { decrement: quantity },
         },
       });
-
+  
       return res.status(201).json(transaction);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       return res.status(500).json({ message: 'Server error', error });
     }
   };
+  
 
   /**
    * @swagger
