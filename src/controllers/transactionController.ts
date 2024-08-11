@@ -169,6 +169,9 @@
       });
 
       if (!stock || stock.quantity < quantity) {
+        console.log(stock);
+        console.log('Available stock quantity:', stock.quantity);
+        console.log('Requested quantity:', quantity);
         return res.status(400).json({ message: 'Not enough stock available' });
       }
 
