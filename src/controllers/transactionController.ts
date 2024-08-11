@@ -58,6 +58,7 @@
       // Ensure expirationDate is correctly formatted as an ISO string
       expirationDate = formatISO(parseISO(expirationDate));
   
+      // Fetch the product to ensure it exists
       const product = await prisma.product.findUnique({
         where: { productName },
       });
@@ -66,25 +67,25 @@
         return res.status(400).json({ message: 'Product not found' });
       }
   
+      // Create an incoming transaction using product relation
       const transaction = await prisma.incomingTransaction.create({
         data: {
-          productName,
           quantity,
-          expirationDate,
-          product: { connect: { id: product.id } },
+          expirationDate: new Date(expirationDate), 
+          product: { connect: { id: product.id } }, 
         },
       });
   
+      // Upsert the stock record
       await prisma.stock.upsert({
-        where: { productName },
+        where: { id: product.id },
         update: {
           quantity: { increment: quantity },
-          expirationDate,
+          expirationDate: new Date(expirationDate),
         },
         create: {
-          productName,
           quantity,
-          expirationDate,
+          expirationDate: new Date(expirationDate),
           product: { connect: { id: product.id } },
         },
       });
@@ -95,6 +96,7 @@
       return res.status(500).json({ message: 'Server error', error });
     }
   };
+  
 
   /**
    * @swagger
@@ -163,7 +165,7 @@
       }
 
       const stock = await prisma.stock.findUnique({
-        where: { productName },
+        where: { id: productName },
       });
 
       if (!stock || stock.quantity < quantity) {
@@ -172,7 +174,6 @@
 
       const transaction = await prisma.outgoingTransaction.create({
         data: {
-          productName,
           quantity,
           employeeName,
           employeePhone,
@@ -182,7 +183,7 @@
       });
 
       await prisma.stock.update({
-        where: { productName },
+        where: { id: productName },
         data: {
           quantity: { decrement: quantity },
         },
