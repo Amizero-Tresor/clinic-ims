@@ -165,7 +165,7 @@
       }
 
       const stock = await prisma.stock.findUnique({
-        where: { productName },
+        where: {productName: productName },
       });
 
       if (!stock || stock.quantity < quantity) {
