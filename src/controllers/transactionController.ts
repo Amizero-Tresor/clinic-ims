@@ -1,5 +1,6 @@
   import { Request, Response } from 'express';
   import prisma from "../../prisma/prisma-client";
+  import { parseISO, formatISO } from 'date-fns';
 
   /**
    * @swagger
@@ -51,17 +52,20 @@
    *         description: Server error
    */
   export const createIncomingTransaction = async (req: Request, res: Response) => {
-    const { productName, quantity, expirationDate } = req.body;
-
+    let { productName, quantity, expirationDate } = req.body;
+  
     try {
+      // Ensure expirationDate is correctly formatted as an ISO string
+      expirationDate = formatISO(parseISO(expirationDate));
+  
       const product = await prisma.product.findUnique({
         where: { productName },
       });
-
+  
       if (!product) {
         return res.status(400).json({ message: 'Product not found' });
       }
-
+  
       const transaction = await prisma.incomingTransaction.create({
         data: {
           productName,
@@ -70,7 +74,7 @@
           product: { connect: { id: product.id } },
         },
       });
-
+  
       await prisma.stock.upsert({
         where: { productName },
         update: {
@@ -84,10 +88,10 @@
           product: { connect: { id: product.id } },
         },
       });
-
+  
       return res.status(201).json(transaction);
     } catch (error) {
-      console.log(error)
+      console.error(error);
       return res.status(500).json({ message: 'Server error', error });
     }
   };
