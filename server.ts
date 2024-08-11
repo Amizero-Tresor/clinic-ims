@@ -4,6 +4,7 @@ const authRoute = require("./src/routes/authRoute");
 const employeeRoutes = require("./src/routes/employee")
 const productRoutes = require("./src/routes/product");
 const transactionRoutes = require("./src/routes/transaction");
+const stockRoutes = require("./src/routes/stock")
 import morgan from 'morgan';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUI from 'swagger-ui-express';
@@ -54,6 +55,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/api/stocks", stockRoutes)
 
 const PORT = process.env.PORT || 5000;
 
