@@ -36,7 +36,7 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 app.use(cors({
-    origin: 'http://localhost:5173', // Allow requests from this origin
+    origin: ['http://localhost:5173', 'https://clinic-ims.vercel.app'], // Allow requests from this origin
     methods: 'GET,POST,PUT,DELETE', // Allow these HTTP methods
     credentials: true // If you need to send cookies with requests
   }));
