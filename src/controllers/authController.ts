@@ -44,6 +44,7 @@ import prisma from "../../prisma/prisma-client"
 export const register = async (req: Request, res: Response) => {
   const { firstName, lastName, email, phoneNumber, password, type } = req.body;
 
+
   try {
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -72,7 +73,6 @@ export const register = async (req: Request, res: Response) => {
 
     return res.status(201).json({ token, user });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: 'Server error', error });
     
   }
@@ -102,6 +102,7 @@ export const register = async (req: Request, res: Response) => {
  */
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
+  console.log({email,password})
 
   try {
     const user = await prisma.user.findUnique({
