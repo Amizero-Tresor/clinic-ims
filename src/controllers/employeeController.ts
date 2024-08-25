@@ -2,6 +2,7 @@
 
 import { Request, Response } from 'express';
 import prisma from "../../prisma/prisma-client"
+import { Department } from '@prisma/client'; // Import the Department enum
 
 /**
  * @swagger
@@ -32,10 +33,6 @@ import prisma from "../../prisma/prisma-client"
  *       400:
  *         description: Bad request
  */
-import { Request, Response } from 'express';
-import { prisma } from '../prismaClient'; // Adjust the import path as necessary
-import { Department } from '@prisma/client'; // Import the Department enum
-
 export const createEmployee = async (req: Request, res: Response) => {
   const { employeeName, department, phoneNumber } = req.body;
 
