@@ -81,9 +81,9 @@ enum UserType {
 }
 
 enum Department {
-  Dentistry
-  Laboratory
-  Physiotherapy
-  Nursing
-  Doctors
+  DENTISTRY
+  LABORATORY
+  PHYSIOTHERAPY
+  NURSING
+  DOCTOR
 }
