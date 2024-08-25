@@ -36,10 +36,12 @@ export const createEmployee = async (req: Request, res: Response) => {
   const { employeeName, department, phoneNumber } = req.body;
 
   try {
+    const upperCaseDepartment = department.toUpperCase(); // Convert to uppercase
+
     const employee = await prisma.employee.create({
       data: {
         employeeName,
-        department,
+        department: upperCaseDepartment,
         phoneNumber,
       },
     });
