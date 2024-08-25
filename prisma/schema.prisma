@@ -6,7 +6,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
 model User {
@@ -81,8 +81,9 @@ enum UserType {
 }
 
 enum Department {
-  PHARMACY
-  LAB
-  RECEPTION
-  WARD
+  DENTISTRY
+  LAORATORY
+  PHYSIOTHERAPY
+  NURSING
+  CLEANER
 }
