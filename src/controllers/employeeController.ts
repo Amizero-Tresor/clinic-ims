@@ -32,16 +32,26 @@ import prisma from "../../prisma/prisma-client"
  *       400:
  *         description: Bad request
  */
+import { Request, Response } from 'express';
+import { prisma } from '../prismaClient'; // Adjust the import path as necessary
+import { Department } from '@prisma/client'; // Import the Department enum
+
 export const createEmployee = async (req: Request, res: Response) => {
   const { employeeName, department, phoneNumber } = req.body;
 
   try {
-    const upperCaseDepartment = department.toUpperCase(); // Convert to uppercase
+    // Convert the department to uppercase and match with enum
+    const upperCaseDepartment = department.toUpperCase() as keyof typeof Department;
+
+    // Validate if the upperCaseDepartment is a valid enum value
+    if (!Department[upperCaseDepartment]) {
+      return res.status(400).json({ message: 'Invalid department value' });
+    }
 
     const employee = await prisma.employee.create({
       data: {
         employeeName,
-        department: upperCaseDepartment,
+        department: Department[upperCaseDepartment], // Use the enum value here
         phoneNumber,
       },
     });
@@ -52,6 +62,7 @@ export const createEmployee = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Server error', error });
   }
 };
+
 /**
  * @swagger
  * tags:
