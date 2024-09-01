@@ -1,208 +1,227 @@
-  import { Request, Response } from 'express';
-  import prisma from "../../prisma/prisma-client";
-  import { parseISO, formatISO } from 'date-fns';
+import { Request, Response } from 'express';
+import prisma from "../../prisma/prisma-client";
+import { parseISO, formatISO } from 'date-fns';
 
-  /**
-   * @swagger
-   * tags:
-   *   name: Transactions
-   *   description: Transaction management
-   */
+/**
+ * @swagger
+ * tags:
+ *   name: Transactions
+ *   description: Transaction management
+ */
 
-  /**
-   * @swagger
-   * /transactions/incoming:
-   *   post:
-   *     summary: Create an incoming transaction
-   *     tags: [Transactions]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               productName:
-   *                 type: string
-   *               quantity:
-   *                 type: integer
-   *               expirationDate:
-   *                 type: string
-   *                 format: date
-   *     responses:
-   *       201:
-   *         description: Incoming transaction created successfully
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 id:
-   *                   type: integer
-   *                 productName:
-   *                   type: string
-   *                 quantity:
-   *                   type: integer
-   *                 expirationDate:
-   *                   type: string
-   *                   format: date
-   *       400:
-   *         description: Product not found
-   *       500:
-   *         description: Server error
-   */
-  export const createIncomingTransaction = async (req: Request, res: Response) => {
-    let { productName, quantity, expirationDate } = req.body;
-  
-    try {
-      // Ensure expirationDate is correctly formatted as an ISO string
-      expirationDate = formatISO(parseISO(expirationDate));
-  
-      // Fetch the product to ensure it exists
-      const product = await prisma.product.findUnique({
-        where: { productName },
-      });
+/**
+ * @swagger
+ * /transactions/incoming:
+ *   post:
+ *     summary: Create an incoming transaction
+ *     tags: [Transactions]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               productName:
+ *                 type: string
+ *               quantity:
+ *                 type: integer
+ *               expirationDate:
+ *                 type: string
+ *                 format: date
+ *     responses:
+ *       201:
+ *         description: Incoming transaction created or updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 productName:
+ *                   type: string
+ *                 quantity:
+ *                   type: integer
+ *                 expirationDate:
+ *                   type: string
+ *                   format: date
+ *       400:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
+ */
+export const createIncomingTransaction = async (req: Request, res: Response) => {
+  let { productName, quantity, expirationDate } = req.body;
 
-      if (!product) {
-        return res.status(400).json({ message: 'Product not found' });
-      }
-  
-      // Create an incoming transaction using product relation
-      const transaction = await prisma.incomingTransaction.create({
-        data: {
-          quantity,
-          expirationDate: new Date(expirationDate), 
-          product: { connect: { id: product.id } }, 
-        },
-      });
-  
-      // Upsert the stock record
-      await prisma.stock.upsert({
-        where: { id: product.id },
-        update: {
-          quantity: { increment: quantity },
-          expirationDate: new Date(expirationDate),
-        },
-        create: {
-          quantity,
-          expirationDate: new Date(expirationDate),
-          product: { connect: { id: product.id } },
-        },
-      });
-  
-      return res.status(201).json(transaction);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Server error', error });
+  try {
+    expirationDate = formatISO(parseISO(expirationDate));
+
+    const product = await prisma.product.findUnique({
+      where: { productName },
+    });
+
+    if (!product) {
+      return res.status(400).json({ message: 'Product not found' });
     }
-  };
-  
 
-  /**
-   * @swagger
-   * /transactions/outgoing:
-   *   post:
-   *     summary: Create an outgoing transaction
-   *     tags: [Transactions]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               productName:
-   *                 type: string
-   *               quantity:
-   *                 type: integer
-   *               employeeName:
-   *                 type: string
-   *               employeePhone:
-   *                 type: string
-   *     responses:
-   *       201:
-   *         description: Outgoing transaction created successfully
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 id:
-   *                   type: integer
-   *                 productName:
-   *                   type: string
-   *                 quantity:
-   *                   type: integer
-   *                 employeeName:
-   *                   type: string
-   *                 employeePhone:
-   *                   type: string
-   *       400:
-   *         description: Product or Employee not found, or not enough stock
-   *       500:
-   *         description: Server error
-   */
-  export const createOutgoingTransaction = async (req: Request, res: Response) => {
-    const { productName, quantity, employeeName, employeePhone } = req.body;
-  
-    try {
-      // Find the product by productName
-      const product = await prisma.product.findUnique({
-        where: { productName },
-      });
-  
-      if (!product) {
-        return res.status(400).json({ message: 'Product not found' });
-      }
-  
-      // Find the employee by employeeName and phoneNumber
-      const employee = await prisma.employee.findUnique({
+    let existingTransaction = await prisma.incomingTransaction.findFirst({
+      where: { 
+        productName,
+        expirationDate: new Date(expirationDate),
+      },
+    });
+
+    if (existingTransaction) {
+      await prisma.stock.updateMany({
         where: {
-          employeeName_phoneNumber: { employeeName, phoneNumber: employeePhone },
+          productName: product.productName,
+          expirationDate: new Date(expirationDate),
+        },
+        data: {
+          quantity: { increment: quantity },
         },
       });
-  
-      if (!employee) {
-        return res.status(400).json({ message: 'Employee not found' });
-      }
-  
-      // Find the stock by productName
-      const stock = await prisma.stock.findUnique({
-        where: { productName },
-      });
-  
-      if (!stock) {
-        return res.status(400).json({ message: 'Stock not found' });
-      }
-  
-      // Check if there's enough stock available
-      if (stock.quantity < quantity) {
-        return res.status(400).json({ message: 'Not enough stock available' });
-      }
-  
-      // Create the outgoing transaction
-      const transaction = await prisma.outgoingTransaction.create({
+    } else {
+      existingTransaction = await prisma.incomingTransaction.create({
         data: {
           quantity,
-          product: { connect: { id: product.id } },
-          employee: { connect: { id: employee.id } },
+          expirationDate: new Date(expirationDate),
+          product: { connect: { productName: product.productName } },
         },
       });
-  
-      // Update the stock quantity
-      await prisma.stock.update({
-        where: { productName },
+
+      await prisma.stock.create({
         data: {
-          quantity: { decrement: quantity },
+          productName: product.productName,
+          quantity,
+          expirationDate: new Date(expirationDate),
         },
       });
-  
-      return res.status(201).json(transaction);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: 'Server error', error });
     }
-  };
+
+    return res.status(201).json(existingTransaction);
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+
+
+/**
+ * @swagger
+ * /transactions/outgoing:
+ *   post:
+ *     summary: Create an outgoing transaction
+ *     tags: [Transactions]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               productName:
+ *                 type: string
+ *               quantity:
+ *                 type: integer
+ *               employeeName:
+ *                 type: string
+ *               employeePhone:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Outgoing transaction created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 productName:
+ *                   type: string
+ *                 quantity:
+ *                   type: integer
+ *                 employeeName:
+ *                   type: string
+ *                 employeePhone:
+ *                   type: string
+ *       400:
+ *         description: Product or Employee not found, or not enough stock
+ *       500:
+ *         description: Server error
+ */
+export const createOutgoingTransaction = async (req: Request, res: Response) => {
+  const { productName, quantity, employeeName, employeePhone } = req.body;
+
+  try {
+    const product = await prisma.product.findUnique({
+      where: { productName },
+    });
+
+    if (!product) {
+      return res.status(400).json({ message: 'Product not found' });
+    }
+
+    const employee = await prisma.employee.findUnique({
+      where: {
+        employeeName_phoneNumber: { employeeName, phoneNumber: employeePhone },
+      },
+    });
+
+    if (!employee) {
+      return res.status(400).json({ message: 'Employee not found' });
+    }
+
+    let stocks = await prisma.stock.findMany({
+      where: { productName },
+      orderBy: { expirationDate: 'asc' },
+    });
+
+    if (!stocks || stocks.length === 0) {
+      return res.status(400).json({ message: 'Stock not found' });
+    }
+
+    let remainingQuantity = quantity;
+
+    for (let stock of stocks) {
+      if (remainingQuantity <= 0) break;
+
+      if (stock.quantity <= remainingQuantity) {
+        await prisma.stock.delete({ where: { id: stock.id } });
+        remainingQuantity -= stock.quantity;
+      } else {
+        await prisma.stock.update({
+          where: { id: stock.id },
+          data: { quantity: { decrement: remainingQuantity } },
+        });
+        remainingQuantity = 0;
+      }
+    }
+
+    if (remainingQuantity > 0) {
+      return res.status(400).json({ message: 'Not enough stock available' });
+    }
+
+    // Create the outgoing transaction
+    const transaction = await prisma.outgoingTransaction.create({
+      data: {
+        quantity,
+        product: { connect: { id: product.id } },
+        employee: { connect: { id: employee.id } },
+      },
+    });
+
+    return res.status(201).json(transaction);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Server error', error });
+  }
+};
+
   
 
   /**

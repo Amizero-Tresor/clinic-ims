@@ -47,7 +47,7 @@ model Product {
 
 model Stock {
   id              Int      @id @default(autoincrement())
-  productName     String   @unique  
+  productName     String  
   quantity        Int
   expirationDate  DateTime
   registrationDate DateTime @default(now())
