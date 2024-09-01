@@ -43,7 +43,7 @@ import prisma from "../../prisma/prisma-client"
  */
 export const register = async (req: Request, res: Response) => {
   const { firstName, lastName, email, phoneNumber, password, type } = req.body;
-
+  
 
   try {
     const existingUser = await prisma.user.findUnique({
@@ -102,12 +102,14 @@ export const register = async (req: Request, res: Response) => {
  */
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  console.log({email,password})
+  // console.log({email,password})
 
   try {
+    console.log("email ", email);
     const user = await prisma.user.findUnique({
       where: { email },
     });
+    console.log("email ", email);
 
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });

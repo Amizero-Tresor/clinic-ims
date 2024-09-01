@@ -62,7 +62,7 @@
       const product = await prisma.product.findUnique({
         where: { productName },
       });
-  
+
       if (!product) {
         return res.status(400).json({ message: 'Product not found' });
       }
