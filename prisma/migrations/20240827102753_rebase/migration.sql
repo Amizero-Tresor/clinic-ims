@@ -1,8 +1,18 @@
 -- CreateEnum
-CREATE TYPE "UserType" AS ENUM ('ADMIN', 'MANAGER');
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'usertype') THEN
+    CREATE TYPE "UserType" AS ENUM ('ADMIN', 'MANAGER');
+  END IF;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "Department" AS ENUM ('DENTISTRY', 'LABORATORY', 'PHYSIOTHERAPY', 'NURSING', 'DOCTOR');
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'department') THEN
+    CREATE TYPE "Department" AS ENUM ('DENTISTRY', 'LABORATORY', 'PHYSIOTHERAPY', 'NURSING', 'DOCTOR');
+  END IF;
+END $$;
 
 -- CreateTable
 CREATE TABLE "User" (
