@@ -84,9 +84,6 @@ CREATE UNIQUE INDEX "Employee_employeeName_phoneNumber_key" ON "Employee"("emplo
 -- CreateIndex
 CREATE UNIQUE INDEX "Product_productName_key" ON "Product"("productName");
 
--- CreateIndex
-CREATE UNIQUE INDEX "Stock_productName_key" ON "Stock"("productName");
-
 -- AddForeignKey
 ALTER TABLE "Stock" ADD CONSTRAINT "Stock_productName_fkey" FOREIGN KEY ("productName") REFERENCES "Product"("productName") ON DELETE RESTRICT ON UPDATE CASCADE;
 
